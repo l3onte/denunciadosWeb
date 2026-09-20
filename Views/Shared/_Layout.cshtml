@@ -1,50 +1,136 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - denunciadosWeb</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/denunciadosWeb.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">denunciadosWeb</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - denunciadosWeb - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <title>@ViewData["Title"] - denunciadosWeb</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/denunciadosWeb.styles.css"
+          asp-append-version="true" />
+</head>
+
+<body class="min-h-screen bg-slate-100">
+
+    <header class="bg-slate-900 text-white border-b border-slate-800 shadow-lg sticky top-0 z-30">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="flex items-center justify-between h-16">
+
+                <!-- Branding -->
+                <div class="flex items-center gap-3">
+
+                    <div class="w-10 h-10 rounded-full border border-slate-700 bg-slate-800 flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-shield-halved text-lg text-blue-400"></i>
+                    </div>
+
+                    <div>
+
+                        <div class="flex items-center gap-2">
+
+                            <span class="text-[10px] font-bold uppercase tracking-[0.2em] bg-blue-900/80 text-blue-300 px-2 py-0.5 rounded border border-blue-700/50">
+                                Policía Nacional
+                            </span>
+
+                            <span class="text-xs text-slate-400 hidden sm:inline">
+                                República de Nicaragua
+                            </span>
+
+                        </div>
+
+                        <h1 class="text-base font-semibold tracking-wide text-slate-100 leading-tight">
+                            Sistema de Gestión de Denuncias
+                        </h1>
+
+                    </div>
+
+                </div>
+
+
+                <div class="flex items-center gap-4">
+
+                    <div class="hidden md:flex items-center gap-3 pr-4 border-r border-slate-800 text-right">
+
+                        <div>
+
+                            <p class="text-xs font-semibold text-slate-200">
+                                @User.Identity?.Name
+                            </p>
+
+                            <p class="text-[11px] text-slate-400">
+                                @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                            </p>
+
+                        </div>
+
+                        <div class="w-8 h-8 rounded-full bg-blue-950 border border-blue-700 text-blue-300 flex items-center justify-center text-xs font-bold">
+                            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                        </div>
+
+                    </div>
+
+                    <form asp-controller="Account"
+                          asp-action="Logout"
+                          method="post">
+
+                        <button type="submit"
+                                class="text-slate-400 hover:text-white p-2 rounded-md hover:bg-slate-800 transition"
+                                title="Cerrar sesión">
+
+                            <i class="fa-solid fa-right-from-bracket text-base"></i>
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 text-xs py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-shield text-slate-500"></i>
+                <span>Policía Nacional de Nicaragua &copy; 2026 - Sistema de Gestión Operativa</span>
+            </div>
+            <div class="text-slate-500 text-[11px]">
+                Base de datos: <span class="text-slate-300 font-mono">denuncias_web_db</span> | Uso Oficial Restringido
+            </div>
         </div>
     </footer>
+
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>
