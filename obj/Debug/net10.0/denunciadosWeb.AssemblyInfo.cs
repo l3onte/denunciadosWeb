@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("denunciadosWeb")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+42dee4e673f004d592dc805f37d774791a8e7565")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+09dd7d901f4fa2d7a2eedefb8595bffafa874495")]
 [assembly: System.Reflection.AssemblyProductAttribute("denunciadosWeb")]
 [assembly: System.Reflection.AssemblyTitleAttribute("denunciadosWeb")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
