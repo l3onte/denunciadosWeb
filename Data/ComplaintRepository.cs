@@ -350,10 +350,10 @@ public class ComplaintRepository
 
         return complaints;
     }
-    
-   public async Task<int> CreateComplaintAsync(
-    CreateComplaintViewModel model,
-    int userId)
+
+    public async Task<int> CreateComplaintAsync(
+     CreateComplaintViewModel model,
+     int userId)
     {
         const string complaintSql = @"
             INSERT INTO denuncias
@@ -805,5 +805,448 @@ public class ComplaintRepository
             await transaction.RollbackAsync();
             throw;
         }
+    }
+    
+    public async Task<ComplaintDetailsViewModel?> GetComplaintDetailsAsync(int complaintId)
+    {
+        const string complaintSql = @"
+            SELECT
+                d.id AS complaint_id,
+                d.fecha_hora_ocurrido,
+                d.direccion,
+                d.sintesis,
+                d.cantidad_masculinos,
+                d.cantidad_femeninos,
+                d.cantidad_desconocidos,
+                d.fecha_hora_registro,
+
+                u.id AS user_id,
+                u.nombre AS user_name,
+                u.apellido AS user_last_name,
+
+                l.id AS location_id,
+                l.nombre AS location_name,
+                l.municipio,
+                l.numero_distrito,
+
+                tl.id AS location_type_id,
+                tl.nombre AS location_type_name,
+
+                td.id AS crime_type_id,
+                td.nombre AS crime_type_name,
+
+                e.id AS status_id,
+                e.nombre AS status_name
+
+            FROM denuncias d
+
+            INNER JOIN usuarios u
+                ON u.id = d.usuario_id
+
+            INNER JOIN localidades l
+                ON l.id = d.localidad_id
+
+            INNER JOIN tipos_lugar tl
+                ON tl.id = d.tipo_lugar_id
+
+            INNER JOIN tipos_delito td
+                ON td.id = d.tipo_delito_id
+
+            INNER JOIN estados_denuncia e
+                ON e.id = d.estado_id
+
+            WHERE d.id = @complaintId;
+        ";
+
+        await using var connection = new MySqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        ComplaintDetailsViewModel? complaint = null;
+
+        await using (var command = new MySqlCommand(complaintSql, connection))
+        {
+            command.Parameters.AddWithValue(
+                "@complaintId",
+                complaintId
+            );
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            complaint = new ComplaintDetailsViewModel
+            {
+                Id = reader.GetInt32("complaint_id"),
+
+                DateAndTimeOfOccurrence =
+                    reader.GetDateTime("fecha_hora_ocurrido"),
+
+                RegistrationDate =
+                    reader.GetDateTime("fecha_hora_registro"),
+
+                Direction =
+                    reader.IsDBNull(reader.GetOrdinal("direccion"))
+                        ? null
+                        : reader.GetString("direccion"),
+
+                Synthesis =
+                    reader.GetString("sintesis"),
+
+                MasculineQuantities =
+                    reader.GetInt32("cantidad_masculinos"),
+
+                FemaleQuantities =
+                    reader.GetInt32("cantidad_femeninos"),
+
+                UnknownQuantities =
+                    reader.GetInt32("cantidad_desconocidos"),
+
+                User = new UserDetailViewModel
+                {
+                    Id = reader.GetInt32("user_id"),
+
+                    Name =
+                        reader.GetString("user_name"),
+
+                    LastName =
+                        reader.GetString("user_last_name")
+                },
+
+                Location = new LocationDetailViewModel
+                {
+                    Id = reader.GetInt32("location_id"),
+
+                    Name =
+                        reader.GetString("location_name"),
+
+                    Municipality =
+                        reader.GetString("municipio"),
+
+                    DistrictNumber =
+                        reader.GetInt32("numero_distrito")
+                },
+
+                LocationType = new LocationTypeDetailViewModel
+                {
+                    Id = reader.GetInt32("location_type_id"),
+
+                    Name =
+                        reader.GetString("location_type_name")
+                },
+
+                CrimeType = new CrimeTypeDetailViewModel
+                {
+                    Id = reader.GetInt32("crime_type_id"),
+
+                    Name =
+                        reader.GetString("crime_type_name")
+                },
+
+                ComplaintStatus = new ComplaintStatusDetailViewModel
+                {
+                    Id = reader.GetInt32("status_id"),
+
+                    Name =
+                        reader.GetString("status_name")
+                }
+            };
+        }
+
+        const string victimsSql = @"
+            SELECT
+                id,
+                nombre,
+                apellido,
+                identificacion,
+                sexo,
+                edad
+            FROM victimas
+            WHERE denuncia_id = @complaintId
+            ORDER BY id;
+        ";
+
+        await using (var command = new MySqlCommand(victimsSql, connection))
+        {
+            command.Parameters.AddWithValue(
+                "@complaintId",
+                complaintId
+            );
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                complaint!.Victims.Add(
+                    new VictimDetailViewModel
+                    {
+                        Id = reader.GetInt32("id"),
+
+                        Name =
+                            reader.GetString("nombre"),
+
+                        LastName =
+                            reader.GetString("apellido"),
+
+                        Identification =
+                            reader.IsDBNull(reader.GetOrdinal("identificacion"))
+                                ? null
+                                : reader.GetString("identificacion"),
+
+                        Sex =
+                            reader.IsDBNull(reader.GetOrdinal("sexo"))
+                                ? null
+                                : reader.GetString("sexo"),
+
+                        Age =
+                            reader.IsDBNull(reader.GetOrdinal("edad"))
+                                ? null
+                                : reader.GetInt32("edad")
+                    }
+                );
+            }
+        }
+
+        const string witnessesSql = @"
+            SELECT
+                id,
+                nombre,
+                apellido,
+                identificacion,
+                sexo,
+                edad
+            FROM testigos
+            WHERE denuncia_id = @complaintId
+            ORDER BY id;
+        ";
+
+        await using (var command = new MySqlCommand(witnessesSql, connection))
+        {
+            command.Parameters.AddWithValue(
+                "@complaintId",
+                complaintId
+            );
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                complaint!.Witnesses.Add(
+                    new WitnessDetailViewModel
+                    {
+                        Id = reader.GetInt32("id"),
+
+                        Name =
+                            reader.GetString("nombre"),
+
+                        LastName =
+                            reader.GetString("apellido"),
+
+                        Identification =
+                            reader.IsDBNull(reader.GetOrdinal("identificacion"))
+                                ? null
+                                : reader.GetString("identificacion"),
+
+                        Sex =
+                            reader.IsDBNull(reader.GetOrdinal("sexo"))
+                                ? null
+                                : reader.GetString("sexo"),
+
+                        Age =
+                            reader.IsDBNull(reader.GetOrdinal("edad"))
+                                ? null
+                                : reader.GetInt32("edad")
+                    }
+                );
+            }
+        }
+
+        const string authorsSql = @"
+            SELECT
+                id,
+                nombre,
+                apellido,
+                alias,
+                descripcion,
+                color_piel,
+                estatura_aproximada,
+                cabello,
+                contextura,
+                sexo,
+                tatuajes,
+                cicatrices
+            FROM presuntos_autores
+            WHERE denuncia_id = @complaintId
+            ORDER BY id;
+        ";
+
+        await using (var command = new MySqlCommand(authorsSql, connection))
+        {
+            command.Parameters.AddWithValue(
+                "@complaintId",
+                complaintId
+            );
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                complaint!.PresumedAuthors.Add(
+                    new PresumedAuthorDetailViewModel
+                    {
+                        Id = reader.GetInt32("id"),
+
+                        Name =
+                            reader.IsDBNull(reader.GetOrdinal("nombre"))
+                                ? null
+                                : reader.GetString("nombre"),
+
+                        LastName =
+                            reader.IsDBNull(reader.GetOrdinal("apellido"))
+                                ? null
+                                : reader.GetString("apellido"),
+
+                        Alias =
+                            reader.IsDBNull(reader.GetOrdinal("alias"))
+                                ? null
+                                : reader.GetString("alias"),
+
+                        Description =
+                            reader.IsDBNull(reader.GetOrdinal("descripcion"))
+                                ? null
+                                : reader.GetString("descripcion"),
+
+                        SkinColor =
+                            reader.IsDBNull(reader.GetOrdinal("color_piel"))
+                                ? null
+                                : reader.GetString("color_piel"),
+
+                        ApproximateHeight =
+                            reader.IsDBNull(reader.GetOrdinal("estatura_aproximada"))
+                                ? null
+                                : reader.GetDecimal("estatura_aproximada"),
+
+                        Hair =
+                            reader.IsDBNull(reader.GetOrdinal("cabello"))
+                                ? null
+                                : reader.GetString("cabello"),
+
+                        Build =
+                            reader.IsDBNull(reader.GetOrdinal("contextura"))
+                                ? null
+                                : reader.GetString("contextura"),
+
+                        Sex =
+                            reader.IsDBNull(reader.GetOrdinal("sexo"))
+                                ? null
+                                : reader.GetString("sexo"),
+
+                        Tattoos =
+                            reader.IsDBNull(reader.GetOrdinal("tatuajes"))
+                                ? null
+                                : reader.GetString("tatuajes"),
+
+                        Scars =
+                            reader.IsDBNull(reader.GetOrdinal("cicatrices"))
+                                ? null
+                                : reader.GetString("cicatrices")
+                    }
+                );
+            }
+        }
+
+        const string affectedObjectsSql = @"
+            SELECT
+                id,
+                nombre,
+                descripcion,
+                cantidad
+            FROM objetos_afectados
+            WHERE denuncia_id = @complaintId
+            ORDER BY id;
+        ";
+
+        await using (var command = new MySqlCommand(
+            affectedObjectsSql,
+            connection))
+        {
+            command.Parameters.AddWithValue(
+                "@complaintId",
+                complaintId
+            );
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                complaint!.AffectedObjects.Add(
+                    new AffectedObjectDetailViewModel
+                    {
+                        Id =
+                            reader.GetInt32("id"),
+
+                        Name =
+                            reader.GetString("nombre"),
+
+                        Description =
+                            reader.IsDBNull(reader.GetOrdinal("descripcion"))
+                                ? null
+                                : reader.GetString("descripcion"),
+
+                        Quantity =
+                            reader.GetInt32("cantidad")
+                    }
+                );
+            }
+        }
+
+        const string usedObjectsSql = @"
+            SELECT
+                id,
+                nombre,
+                descripcion,
+                cantidad
+            FROM objetos_utilizados
+            WHERE denuncia_id = @complaintId
+            ORDER BY id;
+        ";
+
+        await using (var command = new MySqlCommand(
+            usedObjectsSql,
+            connection))
+        {
+            command.Parameters.AddWithValue(
+                "@complaintId",
+                complaintId
+            );
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                complaint!.UsedObjects.Add(
+                    new UsedObjectDetailViewModel
+                    {
+                        Id =
+                            reader.GetInt32("id"),
+
+                        Name =
+                            reader.GetString("nombre"),
+
+                        Description =
+                            reader.IsDBNull(reader.GetOrdinal("descripcion"))
+                                ? null
+                                : reader.GetString("descripcion"),
+
+                        Quantity =
+                            reader.GetInt32("cantidad")
+                    }
+                );
+            }
+        }
+
+        return complaint;
     }
 }

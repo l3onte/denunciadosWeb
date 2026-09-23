@@ -130,4 +130,18 @@ public class ComplaintController : Controller
         ViewBag.Municipalities =
             await _complaintRepository.GetMunicipalityAsync();
     }
+
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var complaint =
+            await _complaintRepository.GetComplaintDetailsAsync(id);
+
+        if (complaint == null)
+        {
+            return NotFound();
+        }
+
+        return View(complaint);
+    }
 }
