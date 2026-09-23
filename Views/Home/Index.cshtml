@@ -1,10 +1,35 @@
-﻿@{
+﻿@model IEnumerable<denunciadosWeb.Models.Complaint>
+
+@{
     ViewData["Title"] = "Denuncias";
+
+    var filters = ViewBag.Filters as denunciadosWeb.Models.ComplaintFilterViewModel
+        ?? new denunciadosWeb.Models.ComplaintFilterViewModel();
+
+    var crimeTypes = ViewBag.CrimeTypes
+        as IEnumerable<denunciadosWeb.Models.TypeOfCrime>
+        ?? Enumerable.Empty<denunciadosWeb.Models.TypeOfCrime>();
+
+    var locationTypes = ViewBag.LocationTypes
+        as IEnumerable<denunciadosWeb.Models.LocationType>
+        ?? Enumerable.Empty<denunciadosWeb.Models.LocationType>();
+
+    var complaintStatuses = ViewBag.ComplaintStatuses
+        as IEnumerable<denunciadosWeb.Models.ComplaintStatus>
+        ?? Enumerable.Empty<denunciadosWeb.Models.ComplaintStatus>();
+
+    var municipalities = ViewBag.Municipalities
+        as IEnumerable<denunciadosWeb.Models.MunicipalityViewModel>
+        ?? Enumerable.Empty<denunciadosWeb.Models.MunicipalityViewModel>();
+
+    var complaints = Model?.ToList()
+        ?? new List<denunciadosWeb.Models.Complaint>();
 }
 
 <div class="min-h-[calc(100vh-4rem)] bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
 
     <div class="max-w-7xl mx-auto">
+
         <div class="mb-6">
             <h2 class="text-2xl font-semibold text-slate-800">
                 Gestión de Denuncias
@@ -15,7 +40,9 @@
             </p>
         </div>
 
+        <!-- FILTROS -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+
             <div class="px-6 py-5 border-b border-slate-200 bg-slate-50">
 
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -38,213 +65,295 @@
 
                     </div>
 
-                    <button type="button"
-                            class="self-start sm:self-auto text-sm font-medium text-slate-500 hover:text-blue-700 transition flex items-center gap-2">
+                    <a asp-controller="Complaint"
+                       asp-action="Index"
+                       class="self-start sm:self-auto text-sm font-medium text-slate-500 hover:text-blue-700 transition flex items-center gap-2">
 
                         <i class="fa-solid fa-rotate-left text-xs"></i>
 
                         Limpiar filtros
 
-                    </button>
+                    </a>
 
                 </div>
 
             </div>
 
-            <div class="p-6 lg:p-8">
+            <form asp-controller="Complaint"
+                  asp-action="Search"
+                  method="post">
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div>
+                <div class="p-6 lg:p-8">
 
-                        <div class="flex items-center gap-2 mb-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-                            <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center">
-                                <i class="fa-regular fa-calendar text-sm"></i>
+                        <!-- FECHAS -->
+                        <div>
+
+                            <div class="flex items-center gap-2 mb-5">
+
+                                <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center">
+                                    <i class="fa-regular fa-calendar text-sm"></i>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-sm font-semibold text-slate-800">
+                                        Rango de fechas
+                                    </h4>
+
+                                    <p class="text-xs text-slate-400">
+                                        Fecha del acontecimiento
+                                    </p>
+                                </div>
+
                             </div>
 
-                            <div>
-                                <h4 class="text-sm font-semibold text-slate-800">
-                                    Rango de fechas
-                                </h4>
+                            <div class="space-y-4">
 
-                                <p class="text-xs text-slate-400">
-                                    Fecha del acontecimiento
-                                </p>
+                                <div>
+                                    <label for="StartDate"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Fecha inicial
+                                    </label>
+
+                                    <input type="date"
+                                           id="StartDate"
+                                           name="StartDate"
+                                           value="@(filters.StartDate?.ToString("yyyy-MM-dd"))"
+                                           class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                                </div>
+
+                                <div>
+                                    <label for="EndDate"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Fecha final
+                                    </label>
+
+                                    <input type="date"
+                                           id="EndDate"
+                                           name="EndDate"
+                                           value="@(filters.EndDate?.ToString("yyyy-MM-dd"))"
+                                           class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                                </div>
+
                             </div>
 
                         </div>
 
+                        <!-- CLASIFICACIÓN -->
+                        <div class="md:border-l md:border-slate-200 md:pl-8">
 
-                        <div class="space-y-4">
+                            <div class="flex items-center gap-2 mb-5">
 
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Fecha inicial
-                                </label>
+                                <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-list-check text-sm"></i>
+                                </div>
 
-                                <input type="date"
-                                       class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                                <div>
+                                    <h4 class="text-sm font-semibold text-slate-800">
+                                        Clasificación
+                                    </h4>
+
+                                    <p class="text-xs text-slate-400">
+                                        Características de la denuncia
+                                    </p>
+                                </div>
+
                             </div>
 
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Fecha final
-                                </label>
+                            <div class="space-y-4">
 
-                                <input type="date"
-                                       class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                                <div>
+                                    <label for="CrimeTypeId"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Tipo de delito
+                                    </label>
+
+                                    <select id="CrimeTypeId"
+                                            name="CrimeTypeId"
+                                            class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+
+                                        <option value="">
+                                            Todos los delitos
+                                        </option>
+
+                                        @foreach (var crimeType in crimeTypes)
+                                        {
+                                            <option value="@crimeType.Id"
+                                                    selected="@(filters.CrimeTypeId == crimeType.Id ? "selected" : null)">
+                                                @crimeType.Name
+                                            </option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="LocationTypeId"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Tipo de lugar
+                                    </label>
+
+                                    <select id="LocationTypeId"
+                                            name="LocationTypeId"
+                                            class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+
+                                        <option value="">
+                                            Todos los lugares
+                                        </option>
+
+                                        @foreach (var locationType in locationTypes)
+                                        {
+                                            <option value="@locationType.Id"
+                                                    selected="@(filters.LocationTypeId == locationType.Id ? "selected" : null)">
+                                                @locationType.Name
+                                            </option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="ComplaintStatusId"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Estado de la denuncia
+                                    </label>
+
+                                    <select id="ComplaintStatusId"
+                                            name="ComplaintStatusId"
+                                            class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+
+                                        <option value="">
+                                            Todos los estados
+                                        </option>
+
+                                        @foreach (var status in complaintStatuses)
+                                        {
+                                            <option value="@status.Id"
+                                                    selected="@(filters.ComplaintStatusId == status.Id ? "selected" : null)">
+                                                @status.Name
+                                            </option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- UBICACIÓN -->
+                        <div class="md:border-l md:border-slate-200 md:pl-8">
+
+                            <div class="flex items-center gap-2 mb-5">
+
+                                <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-location-dot text-sm"></i>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-sm font-semibold text-slate-800">
+                                        Ubicación
+                                    </h4>
+
+                                    <p class="text-xs text-slate-400">
+                                        Lugar donde ocurrió el hecho
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <div class="space-y-4">
+
+                                <div>
+                                    <label for="Municipality"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Municipio
+                                    </label>
+
+                                    <select id="Municipality"
+                                            name="Municipality"
+                                            class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+
+                                        <option value="">
+                                            Todos los municipios
+                                        </option>
+
+                                        @foreach (var municipality in municipalities)
+                                        {
+                                            <option value="@municipality.Name">
+                                                @municipality.Name
+                                            </option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="Location"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Localidad / Barrio
+                                    </label>
+
+                                    <input type="text"
+                                           id="Location"
+                                           name="Location"
+                                           value="@filters.Location"
+                                           placeholder="Ej. Sutiava"
+                                           class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                                </div>
+
+                                <div>
+                                    <label for="District"
+                                           class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                        Distrito
+                                    </label>
+
+                                    <input type="number"
+                                           id="District"
+                                           name="District"
+                                           value="@filters.District"
+                                           placeholder="Ej. 1"
+                                           min="1"
+                                           class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                                </div>
+
                             </div>
 
                         </div>
 
                     </div>
 
-                    <div class="md:border-l md:border-slate-200 md:pl-8">
+                    <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-                        <div class="flex items-center gap-2 mb-5">
+                        <p class="text-xs text-slate-400">
+                            Puede combinar varios filtros para obtener resultados más específicos.
+                        </p>
 
-                            <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center">
-                                <i class="fa-solid fa-list-check text-sm"></i>
-                            </div>
+                        <button type="submit"
+                                class="h-10 px-5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold shadow-sm transition flex items-center justify-center gap-2">
 
-                            <div>
-                                <h4 class="text-sm font-semibold text-slate-800">
-                                    Clasificación
-                                </h4>
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
 
-                                <p class="text-xs text-slate-400">
-                                    Características de la denuncia
-                                </p>
-                            </div>
+                            Buscar denuncias
 
-                        </div>
-
-
-                        <div class="space-y-4">
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Tipo de delito
-                                </label>
-
-                                <select class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                                    <option value="">Todos los delitos</option>
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Tipo de lugar
-                                </label>
-
-                                <select class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                                    <option value="">Todos los lugares</option>
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Estado de la denuncia
-                                </label>
-
-                                <select class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                                    <option value="">Todos los estados</option>
-                                </select>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="md:border-l md:border-slate-200 md:pl-8">
-
-                        <div class="flex items-center gap-2 mb-5">
-
-                            <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center">
-                                <i class="fa-solid fa-location-dot text-sm"></i>
-                            </div>
-
-                            <div>
-                                <h4 class="text-sm font-semibold text-slate-800">
-                                    Ubicación
-                                </h4>
-
-                                <p class="text-xs text-slate-400">
-                                    Lugar donde ocurrió el hecho
-                                </p>
-                            </div>
-
-                        </div>
-
-
-                        <div class="space-y-4">
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Municipio
-                                </label>
-
-                                <select class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                                    <option value="">Todos los municipios</option>
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Localidad / Barrio
-                                </label>
-
-                                <input type="text"
-                                       placeholder="Ej. Sutiava"
-                                       class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-                            </div>
-
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-                                    Distrito
-                                </label>
-
-                                <input type="number"
-                                       placeholder="Ej. 1"
-                                       class="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-                            </div>
-
-                        </div>
+                        </button>
 
                     </div>
 
                 </div>
 
-                <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-
-                    <p class="text-xs text-slate-400">
-                        Puede combinar varios filtros para obtener resultados más específicos.
-                    </p>
-
-                    <button type="button"
-                            class="h-10 px-5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold shadow-sm transition flex items-center justify-center gap-2">
-
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-
-                        Buscar denuncias
-
-                    </button>
-
-                </div>
-
-            </div>
+            </form>
 
         </div>
 
     </div>
 
-    <div class="max-w-7xl mx-auto mt-6 ">
+    <!-- RESULTADOS -->
+    <div class="max-w-7xl mx-auto mt-6">
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+
             <div class="px-6 py-5 border-b border-slate-200">
 
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -274,7 +383,7 @@
                         </span>
 
                         <span class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
-                            0 expedientes
+                            @complaints.Count expediente@(complaints.Count == 1 ? "" : "s")
                         </span>
 
                     </div>
@@ -284,9 +393,13 @@
             </div>
 
             <div class="overflow-x-auto">
+
                 <table class="w-full text-sm text-left">
+
                     <thead class="bg-slate-50 border-b border-slate-200">
+
                         <tr>
+
                             <th scope="col"
                                 class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
                                 N. Denuncia
@@ -321,107 +434,147 @@
                                 class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 text-center whitespace-nowrap">
                                 Acciones
                             </th>
+
                         </tr>
+
                     </thead>
 
-
                     <tbody class="divide-y divide-slate-100">
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-semibold text-slate-800">
-                                    #000001
-                                </span>
-                            </td>
 
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-slate-700">
-                                    15/09/2026
-                                </div>
+                        @if (complaints.Any())
+                        {
+                            @foreach (var complaint in complaints)
+                            {
+                                <tr class="hover:bg-slate-50 transition">
 
-                                <div class="text-xs text-slate-400 mt-0.5">
-                                    20:15
-                                </div>
-                            </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-semibold text-slate-800">
+                                            #@complaint.Id.ToString("D6")
+                                        </span>
+                                    </td>
 
+                                    <td class="px-6 py-4 whitespace-nowrap">
 
-                            <td class="px-6 py-4">
-                                <span class="text-slate-700">
-                                    Amenazas
-                                </span>
-                            </td>
+                                        <div class="text-slate-700">
+                                            @complaint.DateAndtimeOfOccurrence.ToString("dd/MM/yyyy")
+                                        </div>
 
+                                        <div class="text-xs text-slate-400 mt-0.5">
+                                            @complaint.DateAndtimeOfOccurrence.ToString("HH:mm")
+                                        </div>
 
-                            <td class="px-6 py-4">
-                                <span class="text-slate-700">
-                                    Vía pública
-                                </span>
-                            </td>
+                                    </td>
 
+                                    <td class="px-6 py-4">
+                                        <span class="text-slate-700">
+                                            @complaint.TypeOfCrime?.Name
+                                        </span>
+                                    </td>
 
-                            <td class="px-6 py-4">
-                                <div class="text-slate-700">
-                                    Guadalupe
-                                </div>
+                                    <td class="px-6 py-4">
+                                        <span class="text-slate-700">
+                                            @complaint.LocationType?.Name
+                                        </span>
+                                    </td>
 
-                                <div class="text-xs text-slate-400 mt-0.5">
-                                    León
-                                </div>
-                            </td>
+                                    <td class="px-6 py-4">
 
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                    En proceso
-                                </span>
-                            </td>
+                                        <div class="text-slate-700">
+                                            @complaint.Location?.Name
+                                        </div>
 
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-center gap-1">
-                                    <button type="button"
-                                            title="Ver denuncia"
-                                            class="w-8 h-8 rounded-md text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition">
+                                        <div class="text-xs text-slate-400 mt-0.5">
+                                            @complaint.Location?.Municipality
+                                        </div>
 
-                                        <i class="fa-solid fa-eye text-xs"></i>
-                                    </button>
+                                    </td>
 
-                                    <button type="button"
-                                            title="Editar denuncia"
-                                            class="w-8 h-8 rounded-md text-slate-500 hover:text-amber-700 hover:bg-amber-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
 
-                                        <i class="fa-solid fa-pen text-xs"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium">
 
-                        <tr>
-                            <td colspan="7" class="px-6 py-14 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
-                                        <i class="fa-regular fa-folder-open text-xl"></i>
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+
+                                            @complaint.ComplaintStatus?.Name
+
+                                        </span>
+
+                                    </td>
+
+                                    <td class="px-6 py-4">
+
+                                        <div class="flex items-center justify-center gap-1">
+
+                                            <a asp-controller="Complaint"
+                                               asp-action="Details"
+                                               asp-route-id="@complaint.Id"
+                                               title="Ver denuncia"
+                                               class="w-8 h-8 rounded-md text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition flex items-center justify-center">
+
+                                                <i class="fa-solid fa-eye text-xs"></i>
+
+                                            </a>
+
+                                            <a asp-controller="Complaint"
+                                               asp-action="Edit"
+                                               asp-route-id="@complaint.Id"
+                                               title="Editar denuncia"
+                                               class="w-8 h-8 rounded-md text-slate-500 hover:text-amber-700 hover:bg-amber-50 transition flex items-center justify-center">
+
+                                                <i class="fa-solid fa-pen text-xs"></i>
+
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="7" class="px-6 py-14 text-center">
+
+                                    <div class="flex flex-col items-center justify-center">
+
+                                        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
+                                            <i class="fa-regular fa-folder-open text-xl"></i>
+                                        </div>
+
+                                        <h4 class="text-sm font-semibold text-slate-700">
+                                            No se encontraron denuncias
+                                        </h4>
+
+                                        <p class="text-xs text-slate-400 mt-1 max-w-sm">
+                                            No existen expedientes que coincidan con los filtros seleccionados.
+                                        </p>
+
                                     </div>
 
-                                    <h4 class="text-sm font-semibold text-slate-700">
-                                        No se encontraron denuncias
-                                    </h4>
+                                </td>
 
-                                    <p class="text-xs text-slate-400 mt-1 max-w-sm">
-                                        No existen expedientes que coincidan con los filtros seleccionados.
-                                    </p>
-                                </div>
-                            </td>
-                        </tr>
+                            </tr>
+                        }
+
                     </tbody>
+
                 </table>
+
             </div>
 
             <div class="px-6 py-4 border-t border-slate-200 bg-slate-50">
+
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
                     <span class="text-xs text-slate-400">
                         Sistema de Gestión de Denuncias
                     </span>
 
                     <div class="flex items-center gap-2">
+
                         <button type="button"
                                 disabled
                                 class="px-3 py-1.5 rounded-md border border-slate-200 bg-white text-slate-300 text-xs cursor-not-allowed">
@@ -437,10 +590,15 @@
                                 class="px-3 py-1.5 rounded-md border border-slate-200 bg-white text-slate-300 text-xs cursor-not-allowed">
                             Siguiente
                         </button>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
 </div>
