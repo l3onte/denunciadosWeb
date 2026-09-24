@@ -18,9 +18,11 @@
         as IEnumerable<denunciadosWeb.Models.ComplaintStatus>
         ?? Enumerable.Empty<denunciadosWeb.Models.ComplaintStatus>();
 
-    var municipalities = ViewBag.Municipalities
+    var municipalities = (ViewBag.Municipalities
         as IEnumerable<denunciadosWeb.Models.MunicipalityViewModel>
-        ?? Enumerable.Empty<denunciadosWeb.Models.MunicipalityViewModel>();
+        ?? Enumerable.Empty<denunciadosWeb.Models.MunicipalityViewModel>())
+        .GroupBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
+        .Select(g => g.First());
 
     var complaints = Model?.ToList()
         ?? new List<denunciadosWeb.Models.Complaint>();
@@ -525,15 +527,7 @@
 
                                             </a>
 
-                                            <a asp-controller="Complaint"
-                                               asp-action="Edit"
-                                               asp-route-id="@complaint.Id"
-                                               title="Editar denuncia"
-                                               class="w-8 h-8 rounded-md text-slate-500 hover:text-amber-700 hover:bg-amber-50 transition flex items-center justify-center">
 
-                                                <i class="fa-solid fa-pen text-xs"></i>
-
-                                            </a>
 
                                         </div>
 
